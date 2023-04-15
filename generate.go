@@ -18,10 +18,12 @@ const (
 )
 
 func AddGetAndSet(src string) (newSrc string, err error) {
-	file, err := parser.ParseFile(token.NewFileSet(), "", src, 0)
+	fileSet := token.NewFileSet()
+	file, err := parser.ParseFile(fileSet, "src.go", src, parser.ParseComments)
 	if err != nil {
 		return "", fmt.Errorf("parse src to ast fail, err=%v", err)
 	}
+	commentMap := ast.NewCommentMap(fileSet, file, file.Comments)
 
 	structSpecs := getAllStruct(file)
 	for name, ts := range structSpecs {
@@ -43,9 +45,9 @@ func AddGetAndSet(src string) (newSrc string, err error) {
 			insertGetAndSetMethod(file, ss, field, objMethods)
 		}
 	}
-
+	file.Comments = commentMap.Filter(file).Comments()
 	buf := bytes.NewBufferString("")
-	if err = format.Node(buf, token.NewFileSet(), file); err != nil {
+	if err = format.Node(buf, fileSet, file); err != nil {
 		return "", fmt.Errorf("exec format.Node fail, err=%v", err)
 	}
 	newSrcBytes, err := format.Source(buf.Bytes())
@@ -55,7 +57,7 @@ func AddGetAndSet(src string) (newSrc string, err error) {
 	return string(newSrcBytes), nil
 }
 
-// 返回所有全局定义的有名结构体, 返回结果为 结构体类型名->结构体对应的ast.TypeSpec对象
+// 返回所有全局定义的有名结构体, 返回结果为: 结构体类型名->结构体对应的ast.TypeSpec对象
 func getAllStruct(file *ast.File) (ret map[string]*ast.TypeSpec) {
 	ret = make(map[string]*ast.TypeSpec)
 	for _, decl := range file.Decls {
@@ -132,7 +134,6 @@ func insertSyncImport(file *ast.File) {
 			}
 		}
 	}
-
 	importSpec := &ast.ImportSpec{
 		Path: &ast.BasicLit{
 			Kind:  token.STRING,

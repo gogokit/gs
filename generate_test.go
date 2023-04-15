@@ -12,13 +12,13 @@ func TestFmt(t *testing.T) {
 			const src = `
 package main
 type CommonStruct struct {
-	IntSlice1    []int
+	IntSlice1    []int // 切片1
 	IntSlice2    []int
 	IntSlice3    []int
 	StructPtr    ***CommonStruct
 	StructSlice2 []CommonStruct
 	StructSlice3 []CommonStruct
-	intPtr       ***int
+	intPtr       ***int // 指针
 	Map          map[int][]CommonStruct
 }
 `
@@ -28,13 +28,13 @@ type CommonStruct struct {
 import "sync"
 
 type CommonStruct struct {
-	IntSlice1    []int
+	IntSlice1    []int // 切片1
 	IntSlice2    []int
 	IntSlice3    []int
 	StructPtr    ***CommonStruct
 	StructSlice2 []CommonStruct
 	StructSlice3 []CommonStruct
-	intPtr       ***int
+	intPtr       ***int // 指针
 	Map          map[int][]CommonStruct
 	lock         sync.RWMutex
 }
